@@ -4,7 +4,7 @@
 
 all:
 	mkdir -p build
-	gcc -o build/server main.c libs/picohttpparser.c \
+	gcc -o build/server main.c libs/picohttpparser.c response.c \
 			-I ./libs/ \
 	    -I ./libuv/include \
 	    -L ./libuv/.libs -luv

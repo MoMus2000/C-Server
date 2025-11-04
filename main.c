@@ -9,11 +9,17 @@
 
 uv_loop_t* loop;
 
+typedef struct {
+  char* path;
+  char* method;
+} http_request_t;
+
 void after_write(uv_write_t* req, int status){
+  uv_close((uv_handle_t*) req->handle, NULL);
   free(req);
 }
 
-void parse_http_request(char* request_message, int nread){
+http_request_t parse_http_request(char* request_message, int nread){
 
   const char *method;
   const char *path;
@@ -31,7 +37,15 @@ void parse_http_request(char* request_message, int nread){
                               headers, &num_headers,
                               0);
 
-  printf("HTTP Version %d\n", minor_version);
+  http_request_t request;
+
+  request.method = malloc(method_len+1);
+  request.path = malloc(path_len+1);
+
+  memcpy(request.method, method, method_len);
+  memcpy(request.path, path, path_len);
+
+  return request;
 
 }
 
@@ -40,9 +54,22 @@ void on_read(uv_stream_t* client, ssize_t nread, const uv_buf_t* buf){
       char* response = malloc(nread+1);
       memset(response, '\0', nread+1);
       memcpy(response, buf->base, nread);
-      printf("%s", response);
-      parse_http_request(response, nread);
+      http_request_t req = parse_http_request(response, nread);
+      printf("Method: %s, Path: %s\n", req.method, req.path);
       free(response);
+
+      const char *http_response =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html\r\n"
+      "Content-Length: 13\r\n"
+      "\r\n"
+      "Hello, world!";
+
+      uv_buf_t buffer = uv_buf_init((char*) http_response, strlen(http_response));
+
+      uv_write_t *wreq = malloc(sizeof(uv_write_t));
+
+      uv_write(wreq, (uv_stream_t*) client, &buffer, 1, after_write);
     }
 }
 
@@ -64,16 +91,7 @@ void on_new_connection(uv_stream_t* stream, int status){
   int accept = uv_accept(stream, (uv_stream_t*) client);
 
   if(accept == 0){
-    printf("Client Connected\n");
-
     uv_read_start((uv_stream_t*)client, alloc_buffer, on_read);
-
-    const char* message = "Hello From the Server\n";
-    uv_buf_t buffer = uv_buf_init((char*) message, strlen(message));
-
-    uv_write_t *req = malloc(sizeof(uv_write_t));
-
-    uv_write(req, (uv_stream_t*) client, &buffer, 1, after_write);
 
   } else {
     uv_close((uv_handle_t*) client, NULL);
