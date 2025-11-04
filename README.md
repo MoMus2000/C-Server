@@ -1,18 +1,17 @@
-HTTP Server in C
+## HTTP Server in C
 
 
 ### Experimenting with uv
 
-### Build Instructions
 
-
-Build & Run
+#### Build & Run
 ```bash
 make && make run
 ```
 
 
-Clean
+#### Clean
 ```bash
 make clean
 ```
+
