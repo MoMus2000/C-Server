@@ -1,11 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct{
-  char* buffer;
-  int buffer_size;
-  int capacity;
-} http_response_t ;
+#include "response.h"
 
 void http_response_init(http_response_t* response){
   response->capacity = 1024;

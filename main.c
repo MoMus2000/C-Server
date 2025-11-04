@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "libs/picohttpparser.h"
+#include "response.h"
 
 #define DEFAULT_BACKLOG 128
 
@@ -125,3 +126,4 @@ int main(){
 
   return 0;
 }
+
